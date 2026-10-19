@@ -46,13 +46,24 @@
 </div>
 </main>
 <script>
-// Nothing is sent anywhere from this page: the code is only shown so the creator can paste it
-// on the server, which exchanges it with the platform. The code is removed from the address bar.
+// Nothing is sent to any other site from this page: the code is shown so the creator can paste it
+// on the server (or handed to post.html on this same domain), and removed from the address bar.
 (function () {
   var p = new URLSearchParams(location.search);
   var codigo = p.get("code"), error = p.get("error") || p.get("error_code");
   var estado = p.get("state") || "";
   if (codigo || error) history.replaceState(null, "", location.pathname);
+  // TikTok desde la pantalla de publicación (post.html, misma pestaña y mismo dominio):
+  // se le devuelve el código a esa pantalla, que lo manda al servidor para canjearlo.
+  if (codigo && /^tiktok-demo-/.test(estado)) {
+    try {
+      sessionStorage.setItem("gs_oauth_tiktok", JSON.stringify({code: codigo, state: estado}));
+      document.getElementById("vacio").hidden = false;
+      document.getElementById("vacio").innerHTML = "<h1>Authorization received</h1><p>Returning to Grill and Smoke Studio…</p>";
+      location.replace("post.html");
+      return;
+    } catch (e) { /* sin sessionStorage: se muestra el código para pegarlo */ }
+  }
   var red = /^(tiktok|youtube|instagram|facebook)\b/.exec(estado);
   if (red) document.getElementById("red").textContent = red[1];
   if (error) {

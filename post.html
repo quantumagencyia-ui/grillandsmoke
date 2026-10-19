@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Grill and Smoke Studio · Post to TikTok</title>
+<style>
+  :root{--fondo:#faf7f2;--texto:#1d1a16;--suave:#6b6259;--acento:#b5401f;--borde:#e4ddd3;--tarjeta:#fff}
+  @media (prefers-color-scheme:dark){:root{--fondo:#161412;--texto:#f1ece6;--suave:#a89f95;--acento:#ff7a4d;--borde:#332e29;--tarjeta:#1f1c19}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--texto);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:640px;margin:0 auto;padding:24px 16px 60px}
+  h1{font-size:26px;margin:6px 0 16px}
+  .marca{font-weight:800}
+  .sandbox{display:inline-block;background:#f2b705;color:#1d1a16;font-weight:800;font-size:12px;border-radius:6px;padding:2px 8px;margin-left:8px}
+  .tarjeta{background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;padding:18px;margin-bottom:14px}
+  .cuenta{display:flex;align-items:center;gap:12px}
+  .cuenta img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--borde)}
+  .cuenta small{display:block;color:var(--suave)}
+  label.campo{display:block;font-weight:700;margin:16px 0 6px}
+  textarea,select,input[type=text]{width:100%;font:15px system-ui,sans-serif;border:1px solid var(--borde);border-radius:10px;padding:10px;background:var(--fondo);color:var(--texto)}
+  textarea{min-height:90px}
+  .fila{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--borde)}
+  .fila:last-child{border-bottom:0}
+  .nota{font-size:13px;color:var(--suave)}
+  .apagada{opacity:.5}
+  input[type=checkbox]{width:22px;height:22px;accent-color:var(--acento)}
+  .opciones{display:none;margin:6px 0 0 4px}.opciones.visible{display:block}
+  .opciones label{display:block;margin:6px 0}
+  .alerta{color:var(--acento);font-size:14px;font-weight:600;min-height:1em}
+  button{font:700 15px system-ui,sans-serif;border:0;border-radius:12px;padding:12px 16px;background:var(--acento);color:#fff;cursor:pointer}
+  button.secundario{background:transparent;color:var(--acento);border:1px solid var(--acento)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .ancho{width:100%;margin-top:14px}
+  video{width:100%;max-height:420px;border-radius:12px;background:#000;margin-top:8px}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<div><a class="marca" href="./" style="color:inherit;text-decoration:none">Grill and Smoke Studio</a><span class="sandbox">SANDBOX</span></div>
+<h1>Post to TikTok</h1>
+
+<div class="tarjeta" id="servidor" hidden>
+  <p><strong>Grill and Smoke Studio server</strong><br><span class="nota">Address of the private server that
+  exchanges the authorization and uploads the video (secrets never reach this page).</span></p>
+  <input type="text" id="api" placeholder="https://…">
+  <button class="ancho" id="btn_api">Save</button>
+</div>
+
+<div class="tarjeta" id="conectar" hidden>
+  <p><strong>Connect your TikTok account</strong><br><span class="nota">You will sign in on TikTok and authorize
+  Grill and Smoke Studio to post the videos you choose.</span></p>
+  <button id="btn_conectar">Continue with TikTok</button>
+  <div class="alerta" id="alerta_conectar"></div>
+</div>
+
+<div id="publicar" hidden>
+  <div class="tarjeta">
+    <div class="cuenta"><img id="avatar" alt=""><div><strong id="apodo"></strong><small>Posting to this TikTok account</small></div></div>
+  </div>
+  <div class="tarjeta">
+    <label class="campo" for="video">Video</label>
+    <select id="video"><option value="" selected disabled>Choose a video</option></select>
+    <video id="vista" controls playsinline hidden></video>
+    <div class="alerta" id="alerta_video"></div>
+
+    <label class="campo" for="titulo">Caption</label>
+    <textarea id="titulo" maxlength="2200"></textarea>
+    <div class="nota" style="text-align:right"><span id="cuenta_titulo">0</span>/2200</div>
+
+    <label class="campo" for="privacidad">Who can view this video</label>
+    <select id="privacidad"><option value="" selected disabled>Select privacy level</option></select>
+    <div class="alerta" id="alerta_privacidad"></div>
+
+    <label class="campo">Allow users to</label>
+    <div class="fila" id="fila_comment"><span>Comment</span><input type="checkbox" id="comment"></div>
+    <div class="fila" id="fila_duet"><span>Duet</span><input type="checkbox" id="duet"></div>
+    <div class="fila" id="fila_stitch"><span>Stitch</span><input type="checkbox" id="stitch"></div>
+
+    <label class="campo">Content disclosure</label>
+    <div class="fila"><span>AI-generated content<br><span class="nota">Adds TikTok's "AI-generated" label.</span></span><input type="checkbox" id="ia" checked></div>
+    <div class="fila"><span>Disclose video content<br><span class="nota">Turn on to disclose that this video promotes goods or services in exchange for something of value.</span></span><input type="checkbox" id="divulgar"></div>
+    <div class="opciones" id="opciones_divulgar">
+      <label><input type="checkbox" id="propia"> <strong>Your brand</strong> — You are promoting yourself or your own business.</label>
+      <label><input type="checkbox" id="tercero"> <strong>Branded content</strong> — You are promoting another brand or a third party.</label>
+      <div class="nota" id="etiqueta"></div>
+      <div class="alerta" id="alerta_divulgar"></div>
+    </div>
+
+    <p class="nota" id="consentimiento"></p>
+    <button class="ancho" id="btn_publicar" disabled>Post</button>
+    <div class="alerta" id="estado" style="margin-top:12px"></div>
+  </div>
+</div>
+<div class="alerta" id="alerta_general"></div>
+</main>
+<script>
+var $ = function (id) { return document.getElementById(id); };
+var NOMBRES = {PUBLIC_TO_EVERYONE: "Everyone", MUTUAL_FOLLOW_FRIENDS: "Friends", FOLLOWER_OF_CREATOR: "Followers", SELF_ONLY: "Only me"};
+var creador = null, duracionOk = false;
+// Servidor privado de Grill and Smoke Studio: ?api=… una vez (se recuerda en este navegador).
+var API = "";
+try {
+  var q = new URLSearchParams(location.search).get("api");
+  if (q) { localStorage.setItem("gs_api", q.replace(/\/$/, "")); history.replaceState(null, "", location.pathname); }
+  API = localStorage.getItem("gs_api") || "";
+} catch (e) {}
+function post(ruta, cuerpo) {
+  return fetch(API + ruta, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(cuerpo || {})})
+    .then(function (r) { return r.json(); });
+}
+function cargar() {
+  if (!API) { $("servidor").hidden = false; return; }
+  $("servidor").hidden = true;
+  // ¿Volvemos de la autorización? callback.html dejó el código en esta pestaña.
+  var pendiente = null;
+  try { pendiente = JSON.parse(sessionStorage.getItem("gs_oauth_tiktok") || "null"); sessionStorage.removeItem("gs_oauth_tiktok"); } catch (e) {}
+  if (pendiente) {
+    $("alerta_general").textContent = "Connecting your account…";
+    post("/api/tiktok/canjear", {pegado: pendiente.code + " " + pendiente.state}).then(function (r) {
+      $("alerta_general").textContent = r.ok ? "" : r.error; estado(); });
+    return;
+  }
+  estado();
+}
+function estado() {
+  fetch(API + "/api/tiktok/estado").then(function (r) { return r.json(); }).then(function (e) {
+    if (!e.credenciales) { $("alerta_general").textContent = "Missing Sandbox client key/secret on the server."; return; }
+    if (!e.conectado || e.error) { $("conectar").hidden = false; $("publicar").hidden = true;
+      if (e.error) $("alerta_conectar").textContent = e.error; return; }
+    creador = e.creador; $("conectar").hidden = true; $("publicar").hidden = false;
+    $("apodo").textContent = creador.creator_nickname + (creador.creator_username ? " (@" + creador.creator_username + ")" : "");
+    if (creador.creator_avatar_url) $("avatar").src = creador.creator_avatar_url;
+    var sel = $("privacidad"); sel.length = 1;
+    (creador.privacy_level_options || []).forEach(function (op) {
+      var o = document.createElement("option"); o.value = op; o.textContent = NOMBRES[op] || op; sel.appendChild(o); });
+    [["comment", "comment_disabled"], ["duet", "duet_disabled"], ["stitch", "stitch_disabled"]].forEach(function (t) {
+      if (creador[t[1]]) { $(t[0]).disabled = true; $(t[0]).checked = false; $("fila_" + t[0]).classList.add("apagada");
+        $("fila_" + t[0]).querySelector("span").insertAdjacentHTML("beforeend", '<br><span class="nota">Turned off in your TikTok settings</span>'); } });
+    var v = $("video"); v.length = 1;
+    e.videos.forEach(function (n) { var o = document.createElement("option"); o.value = n; o.textContent = n; v.appendChild(o); });
+    revisar();
+  }).catch(function () { $("alerta_general").textContent = "Cannot reach the server."; $("servidor").hidden = false; });
+}
+$("btn_conectar").onclick = function () {
+  post("/api/tiktok/url").then(function (r) { if (r.url) location.href = r.url; else $("alerta_conectar").textContent = r.error; })
+    .catch(function () { $("alerta_conectar").textContent = "Cannot reach the server."; });
+};
+$("btn_api").onclick = function () {
+  try { localStorage.setItem("gs_api", $("api").value.trim().replace(/\/$/, "")); } catch (e) {}
+  API = $("api").value.trim().replace(/\/$/, ""); cargar();
+};
+$("video").onchange = function () {
+  var v = $("vista"); v.src = API + "/final/" + encodeURIComponent(this.value); v.hidden = false;
+  v.onloadedmetadata = function () {
+    duracionOk = !creador.max_video_post_duration_sec || v.duration <= creador.max_video_post_duration_sec;
+    $("alerta_video").textContent = duracionOk ? "" : "This video is longer than the maximum allowed for this account (" + creador.max_video_post_duration_sec + " s).";
+    revisar(); };
+};
+function revisar() {
+  $("cuenta_titulo").textContent = $("titulo").value.length;
+  var d = $("divulgar").checked, p = $("propia").checked, t = $("tercero").checked;
+  $("opciones_divulgar").classList.toggle("visible", d);
+  var solo = $("privacidad").querySelector('option[value="SELF_ONLY"]');
+  if (solo) { solo.disabled = d && t; if (solo.disabled && $("privacidad").value === "SELF_ONLY") $("privacidad").value = ""; }
+  $("alerta_privacidad").textContent = d && t ? "Branded content visibility cannot be set to private." : "";
+  $("etiqueta").textContent = d && (p || t) ? (t ? 'Your video will be labeled "Paid partnership"' : 'Your video will be labeled "Promotional content"') : "";
+  $("alerta_divulgar").textContent = d && !p && !t ? "You need to indicate if your content promotes yourself, a third party, or both." : "";
+  $("consentimiento").innerHTML = 'By posting, you agree to TikTok\'s <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>' +
+    (t ? ' and TikTok\'s <a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a>' : "") + ".";
+  $("btn_publicar").disabled = !($("video").value && duracionOk && $("privacidad").value && (!d || p || t));
+}
+["titulo", "privacidad", "divulgar", "propia", "tercero", "comment", "duet", "stitch", "ia"].forEach(function (id) {
+  $(id).addEventListener("input", revisar); $(id).addEventListener("change", revisar); });
+$("btn_publicar").onclick = function () {
+  var d = $("divulgar").checked;
+  this.disabled = true; $("estado").textContent = "Uploading to TikTok…";
+  post("/api/tiktok/publicar", {video: $("video").value, title: $("titulo").value, privacy_level: $("privacidad").value,
+    disable_comment: !$("comment").checked, disable_duet: !$("duet").checked, disable_stitch: !$("stitch").checked,
+    is_aigc: $("ia").checked, brand_content_toggle: d && $("tercero").checked, brand_organic_toggle: d && $("propia").checked})
+    .then(function (r) {
+      $("estado").textContent = r.ok ? "Posted. Your video is being processed by TikTok and may take a few minutes to appear on your profile."
+        : "Could not post: " + r.error;
+      if (!r.ok) revisar();
+    });
+};
+cargar();
+</script>
+</body>
+</html>
