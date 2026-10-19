@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Post to TikTok</title>
+<meta name="description" content="Grill and Smoke Studio posting screen (Sandbox).">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  .sandbox{display:inline-block;background:#f2b705;color:#1d1a16;font-weight:800;font-size:12px;letter-spacing:.06em;border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+  .cuenta{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#b5401f,#f2b705);display:grid;place-items:center;color:#fff;font-weight:800}
+  .cuenta small{color:var(--suave);display:block}
+  label.campo{display:block;font-weight:700;margin:18px 0 6px}
+  textarea,select{width:100%;font:15px system-ui,sans-serif;border:1px solid var(--borde);border-radius:10px;padding:10px;background:var(--fondo);color:var(--texto)}
+  textarea{min-height:90px;resize:vertical}
+  .contador{font-size:12px;color:var(--suave);text-align:right}
+  .fila{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--borde)}
+  .fila:last-child{border-bottom:0}
+  .fila .nota{font-size:13px;color:var(--suave)}
+  .fila.apagada{opacity:.5}
+  input[type=checkbox]{width:22px;height:22px;accent-color:var(--acento)}
+  .opciones{margin:8px 0 0 4px;display:none}
+  .opciones.visible{display:block}
+  .opciones label{display:block;margin:6px 0}
+  .aviso{font-size:13px;color:var(--suave);margin-top:16px}
+  .etiqueta{display:inline-block;font-size:12px;border:1px solid var(--borde);border-radius:999px;padding:1px 8px;margin-top:6px}
+  .alerta{color:var(--acento);font-size:14px;font-weight:600;min-height:1em}
+  button.publicar{width:100%;font:700 16px system-ui,sans-serif;border:0;border-radius:12px;padding:14px;background:var(--acento);color:#fff;cursor:pointer;margin-top:14px}
+  button.publicar:disabled{opacity:.4;cursor:not-allowed}
+  video{width:100%;max-height:420px;border-radius:12px;background:#000;margin-top:8px}
+  .estado{margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+<header><a class="marca" href="./">Grill and Smoke Studio</a><span class="sandbox">SANDBOX</span></header>
+<h1>Post to TikTok</h1>
+
+<div class="tarjeta">
+  <div class="cuenta">
+    <div class="avatar" id="avatar">GS</div>
+    <div><strong id="apodo">Grill and Smoke</strong><small>Posting to this TikTok account · Sandbox</small></div>
+  </div>
+
+  <label class="campo" for="archivo">Video</label>
+  <input type="file" id="archivo" accept="video/mp4,video/quicktime">
+  <video id="vista" controls playsinline hidden></video>
+  <div class="alerta" id="alerta_video"></div>
+
+  <label class="campo" for="titulo">Caption</label>
+  <textarea id="titulo" maxlength="2200">¿Cuándo ponerle sal a la carne? Justo antes o 40 minutos antes, nunca en medio. Guía gratis en el link de la descripción. #carneasada #asado #parrilla</textarea>
+  <div class="contador"><span id="cuenta_titulo">0</span>/2200</div>
+
+  <label class="campo" for="privacidad">Who can view this video</label>
+  <select id="privacidad">
+    <option value="" selected disabled>Select privacy level</option>
+  </select>
+  <div class="alerta" id="alerta_privacidad"></div>
+
+  <label class="campo">Allow users to</label>
+  <div class="fila" id="fila_comentarios"><span>Comment</span><input type="checkbox" id="comentarios"></div>
+  <div class="fila" id="fila_duet"><span>Duet</span><input type="checkbox" id="duet"></div>
+  <div class="fila" id="fila_stitch"><span>Stitch</span><input type="checkbox" id="stitch"></div>
+
+  <label class="campo">Content disclosure</label>
+  <div class="fila">
+    <span>AI-generated content<br><span class="nota">Adds TikTok's "AI-generated" label to this post.</span></span>
+    <input type="checkbox" id="ia" checked>
+  </div>
+  <div class="fila">
+    <span>Disclose video content<br><span class="nota">Turn on to disclose that this video promotes goods or services in exchange for something of value.</span></span>
+    <input type="checkbox" id="divulgar">
+  </div>
+  <div class="opciones" id="opciones_divulgar">
+    <label><input type="checkbox" id="marca_propia"> <strong>Your brand</strong> — You are promoting yourself or your own business.</label>
+    <label><input type="checkbox" id="marca_tercero"> <strong>Branded content</strong> — You are promoting another brand or a third party.</label>
+    <span class="etiqueta" id="etiqueta_divulgar" hidden></span>
+    <div class="alerta" id="alerta_divulgar"></div>
+  </div>
+
+  <p class="aviso" id="consentimiento">By posting, you agree to TikTok's
+    <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.</p>
+
+  <button class="publicar" id="publicar" disabled>Post</button>
+  <div class="estado tarjeta" id="estado" hidden></div>
+</div>
+<p class="aviso">Sandbox: this screen uses TikTok's Sandbox environment. The creator's posting options
+come from the creator info endpoint; the video is published only after the creator presses Post.</p>
+</main>
+<script>
+// Sandbox: creator_info as returned by /v2/post/publish/creator_info/query/ for a test account.
+var CREADOR = {
+  creator_nickname: "Grill and Smoke",
+  creator_username: "grillandsmokeparrilleros",
+  privacy_level_options: ["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"],
+  comment_disabled: false, duet_disabled: false, stitch_disabled: true,
+  max_video_post_duration_sec: 600
+};
+var NOMBRES = {PUBLIC_TO_EVERYONE: "Everyone", MUTUAL_FOLLOW_FRIENDS: "Friends",
+               FOLLOWER_OF_CREATOR: "Followers", SELF_ONLY: "Only me"};
+var $ = function (id) { return document.getElementById(id); };
+
+$("apodo").textContent = CREADOR.creator_nickname + " (@" + CREADOR.creator_username + ")";
+CREADOR.privacy_level_options.forEach(function (op) {
+  var o = document.createElement("option"); o.value = op; o.textContent = NOMBRES[op] || op;
+  $("privacidad").appendChild(o);
+});
+[["comentarios", "comment_disabled", "fila_comentarios"], ["duet", "duet_disabled", "fila_duet"],
+ ["stitch", "stitch_disabled", "fila_stitch"]].forEach(function (t) {
+  if (CREADOR[t[1]]) {
+    $(t[0]).disabled = true; $(t[2]).classList.add("apagada");
+    $(t[2]).querySelector("span").insertAdjacentHTML("beforeend",
+      '<br><span class="nota">Turned off in your TikTok settings</span>');
+  }
+});
+
+var duracionOk = false;
+$("archivo").onchange = function () {
+  var f = this.files[0]; if (!f) return;
+  var v = $("vista"); v.src = URL.createObjectURL(f); v.hidden = false;
+  v.onloadedmetadata = function () {
+    duracionOk = v.duration <= CREADOR.max_video_post_duration_sec;
+    $("alerta_video").textContent = duracionOk ? "" :
+      "This video is longer than the maximum allowed for this account (" + CREADOR.max_video_post_duration_sec + " s).";
+    revisar();
+  };
+};
+
+function revisar() {
+  $("cuenta_titulo").textContent = $("titulo").value.length;
+  var divulgar = $("divulgar").checked, propia = $("marca_propia").checked, tercero = $("marca_tercero").checked;
+  $("opciones_divulgar").classList.toggle("visible", divulgar);
+  // Branded content cannot be private (TikTok rule): "Only me" is not available.
+  var soloYo = $("privacidad").querySelector('option[value="SELF_ONLY"]');
+  if (soloYo) {
+    soloYo.disabled = divulgar && tercero;
+    if (soloYo.disabled && $("privacidad").value === "SELF_ONLY") $("privacidad").value = "";
+  }
+  $("alerta_privacidad").textContent = divulgar && tercero
+    ? "Branded content visibility cannot be set to private." : "";
+  var et = $("etiqueta_divulgar");
+  if (divulgar && (propia || tercero)) {
+    et.hidden = false;
+    et.textContent = tercero ? 'Your video will be labeled "Paid partnership"' : 'Your video will be labeled "Promotional content"';
+  } else { et.hidden = true; }
+  $("alerta_divulgar").textContent = divulgar && !propia && !tercero
+    ? "You need to indicate if your content promotes yourself, a third party, or both." : "";
+  var politica = tercero
+    ? ' and TikTok\'s <a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a>' : "";
+  $("consentimiento").innerHTML = 'By posting, you agree to TikTok\'s <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>' + politica + ".";
+  $("publicar").disabled = !($("archivo").files.length && duracionOk && $("privacidad").value &&
+                             (!divulgar || propia || tercero));
+}
+["titulo", "privacidad", "divulgar", "marca_propia", "marca_tercero", "comentarios", "duet", "stitch", "ia"]
+  .forEach(function (id) { $(id).addEventListener("input", revisar); $(id).addEventListener("change", revisar); });
+revisar();
+
+$("publicar").onclick = function () {
+  var cuerpo = {
+    post_info: {
+      title: $("titulo").value, privacy_level: $("privacidad").value,
+      disable_comment: !$("comentarios").checked, disable_duet: !$("duet").checked,
+      disable_stitch: !$("stitch").checked, is_aigc: $("ia").checked,
+      brand_content_toggle: $("divulgar").checked && $("marca_tercero").checked,
+      brand_organic_toggle: $("divulgar").checked && $("marca_propia").checked
+    },
+    source_info: {source: "FILE_UPLOAD", video_size: $("archivo").files[0].size}
+  };
+  this.disabled = true;
+  var e = $("estado"); e.hidden = false;
+  e.innerHTML = "<strong>Sending to TikTok (Sandbox)…</strong><pre style='white-space:pre-wrap;font-size:12px'></pre>";
+  e.querySelector("pre").textContent = "POST /v2/post/publish/video/init/\n" + JSON.stringify(cuerpo, null, 2);
+  setTimeout(function () {
+    e.insertAdjacentHTML("beforeend", "<p><strong>Uploaded.</strong> Your video is being processed by TikTok. " +
+      "It may take a few minutes to appear on your profile.</p>");
+  }, 1500);
+};
+</script>
+</body>
+</html>

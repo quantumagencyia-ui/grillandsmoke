@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Authorization</title>
+<meta name="description" content="OAuth callback of Grill and Smoke Studio.">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  .codigo{font:600 15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fondo);border:1px dashed var(--borde);border-radius:10px;padding:12px;word-break:break-all;user-select:all}
+  button{font:600 15px system-ui,sans-serif;border:0;border-radius:10px;padding:10px 18px;background:var(--acento);color:#fff;cursor:pointer;margin-top:12px}
+  .error{color:var(--acento);font-weight:700}
+  [hidden]{display:none}
+</style>
+</head>
+<body>
+<main>
+<header><a class="marca" href="./">Grill and Smoke Studio</a></header>
+
+<div class="tarjeta" id="ok" hidden>
+  <h1>Authorization received · Autorización recibida</h1>
+  <p>Copy this one-time code and paste it into the Grill and Smoke Studio server within a few minutes.
+     It is single use and expires quickly. Do not share it.</p>
+  <p>Copia este código de un solo uso y pégalo en el servidor de Grill and Smoke Studio en los próximos
+     minutos. Solo sirve una vez y caduca pronto. No lo compartas.</p>
+  <div class="codigo" id="codigo"></div>
+  <button id="copiar" type="button">Copy · Copiar</button>
+  <p id="copiado" hidden>Copied · Copiado ✓</p>
+  <p style="color:var(--suave);font-size:14px">Server command · Comando en el servidor:<br>
+     <code>python3 scripts/publicar.py autorizar <span id="red">tiktok</span></code></p>
+</div>
+
+<div class="tarjeta" id="fallo" hidden>
+  <h1>Authorization not completed · Autorización no completada</h1>
+  <p class="error" id="motivo"></p>
+  <p>You can close this page and start the connection again from the server.<br>
+     Puedes cerrar esta página y volver a iniciar la conexión desde el servidor.</p>
+</div>
+
+<div class="tarjeta" id="vacio" hidden>
+  <h1>Nothing to show · Nada que mostrar</h1>
+  <p>This page receives the response of an account authorization. Open it only from the sign-in flow.<br>
+     Esta página recibe la respuesta de la autorización de una cuenta. Solo se abre desde el inicio de sesión.</p>
+</div>
+</main>
+<script>
+// Nothing is sent anywhere from this page: the code is only shown so the creator can paste it
+// on the server, which exchanges it with the platform. The code is removed from the address bar.
+(function () {
+  var p = new URLSearchParams(location.search);
+  var codigo = p.get("code"), error = p.get("error") || p.get("error_code");
+  var estado = p.get("state") || "";
+  if (codigo || error) history.replaceState(null, "", location.pathname);
+  var red = /^(tiktok|youtube|instagram|facebook)\b/.exec(estado);
+  if (red) document.getElementById("red").textContent = red[1];
+  if (error) {
+    document.getElementById("motivo").textContent =
+      error + (p.get("error_description") ? ": " + p.get("error_description") : "");
+    document.getElementById("fallo").hidden = false;
+  } else if (codigo) {
+    document.getElementById("codigo").textContent = estado ? codigo + " " + estado : codigo;
+    document.getElementById("ok").hidden = false;
+    document.getElementById("copiar").onclick = function () {
+      var texto = document.getElementById("codigo").textContent;
+      navigator.clipboard.writeText(texto).then(function () {
+        document.getElementById("copiado").hidden = false;
+      });
+    };
+  } else {
+    document.getElementById("vacio").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>
